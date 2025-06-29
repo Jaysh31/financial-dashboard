@@ -5,6 +5,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { parseISO, isAfter, isBefore, format } from 'date-fns';
 import dayjs from 'dayjs'; // optional for formatting date
+import StatChart from './StatChart';
 
 
 declare global {
@@ -34,6 +35,27 @@ const [profileOpen, setProfileOpen] = useState(false);
 const username = localStorage.getItem("username");
 console.log("Username from Dashboard:", username);
 
+const months = Array.from({ length: 6 }, (_, i) =>
+  dayjs().subtract(5 - i, 'month').format('MMM YYYY')
+);
+
+const revenueData = months.map(month =>
+  transactions
+    .filter(t =>
+      t.category === 'Revenue' &&
+      dayjs(t.date).format('MMM YYYY') === month
+    )
+    .reduce((sum, t) => sum + t.amount, 0)
+);
+
+const expenseData = months.map(month =>
+  transactions
+    .filter(t =>
+      t.category === 'Expense' &&
+      dayjs(t.date).format('MMM YYYY') === month
+    )
+    .reduce((sum, t) => sum + t.amount, 0)
+);
   useEffect(() => {
 
     // Initialize Overview Chart
@@ -118,7 +140,7 @@ console.log("Username from Dashboard:", username);
             symbol: 'none',
             lineStyle: {
               width: 3,
-              color: 'rgba(251, 191, 114, 1)'
+              color: 'rgba(251, 191, 14, 1)'
             },
             areaStyle: {
               color: {
@@ -333,6 +355,7 @@ const savings = totalRevenue * 0.10; // Example logic for savings
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Balance Card */}
               
+              
               <div className="stat-card p-6 rounded-lg bg-[#22242c] shadow-sm">
                 <div className="flex items-center justify-between">
                   <h3 className="text-gray-400 font-medium">Balance</h3>
@@ -377,12 +400,15 @@ const savings = totalRevenue * 0.10; // Example logic for savings
               </div>
             </div>
 
+
             {/* Charts and Recent Transactions */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Overview Chart */}
               <div className="chart-container lg:col-span-2 p-6 rounded-lg bg-[#22242c] shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-semibold text-white">Overview</h2>
+
+                  
                   <div className="flex items-center space-x-6">
                     <div className="flex items-center space-x-4">
                       <div className="flex items-center space-x-2">
@@ -390,7 +416,7 @@ const savings = totalRevenue * 0.10; // Example logic for savings
                         <span className="text-sm text-gray-400">Income</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <span className="w-3 h-3 bg-yellow-500 rounded-full"></span>
+                        <span className="w-3 h-3 bg-red-500 rounded-full"></span>
                         <span className="text-sm text-gray-400">Expenses</span>
                       </div>
                     </div>
@@ -400,20 +426,25 @@ const savings = totalRevenue * 0.10; // Example logic for savings
                         <i className="ri-arrow-down-s-line"></i>
                       </button>
                       <div id="timeframeOptions" className="dropdown-content bg-gray-800 shadow-lg border border-gray-700">
-                        <a href="#" className="text-sm text-white hover:bg-gray-700">Daily</a>
+                        {/* <a href="#" className="text-sm text-white hover:bg-gray-700">Daily</a>
                         <a href="#" className="text-sm text-white hover:bg-gray-700">Weekly</a>
                         <a href="#" className="text-sm text-white hover:bg-gray-700">Monthly</a>
-                        <a href="#" className="text-sm text-white hover:bg-gray-700">Yearly</a>
+                        <a href="#" className="text-sm text-white hover:bg-gray-700">Yearly</a> */}
                       </div>
                     </div>
                   </div>
                 </div>
-                <div id="overviewChart" className="w-full h-64"></div>
+                <div className="w-full h-64">
+                <StatChart 
+  revenue={revenueData}     // e.g. [300, 320, 310, ...]
+  expenses={expenseData}    // e.g. [100, 180, 120, ...]
+  months={months}           // e.g. ['Jan', 'Feb', ..., 'Dec']
+/>      </div>
               </div>
 
               {/* Recent Transactions */}
               
-    <div className="transactions-container p-6 rounded-lg bg-[#22242c] shadow-sm">
+    <div className="transactions-container p-6 rounded-lg bg-[#22242c] shadow-sm ">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-white">Recent Transactions</h2>
         <a href="#" className="text-white text-sm">See all</a>
